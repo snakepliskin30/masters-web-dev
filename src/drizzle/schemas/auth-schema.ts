@@ -6,6 +6,7 @@ import {
   boolean,
   index,
   uniqueIndex,
+  serial
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -90,6 +91,7 @@ export const verification = pgTable(
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  articles: many(article),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -102,6 +104,25 @@ export const sessionRelations = relations(session, ({ one }) => ({
 export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
     fields: [account.userId],
+    references: [user.id],
+  }),
+}));
+
+export const article = pgTable("article", {
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+    slug: text("slug").notNull().unique(),
+    content: text("content").notNull(),
+    imageUrl: text("image_url"),
+    published: boolean("published").default(false).notNull(),
+    authorId: text("author_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull()
+})
+
+export const articleRelations = relations(article, ({ one }) => ({
+  user: one(user, {
+    fields: [article.authorId],
     references: [user.id],
   }),
 }));

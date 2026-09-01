@@ -1,4 +1,7 @@
 import WikiEditor from "@/components/wiki-editor";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 interface EditArticlePageProps {
   params: Promise<{
@@ -9,6 +12,13 @@ interface EditArticlePageProps {
 export default async function EditArticlePage({
   params,
 }: EditArticlePageProps) {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+  if (!session) {
+    redirect("/auth/signin")
+  }
+
   const { id } = await params;
 
   // In a real app, you would fetch the article data here

@@ -6,9 +6,19 @@ import { ArticleType } from "@/types/api";
 
 import redis from "@/cache"
 
-export async function getArticles() {
+type GetArticleReturnType = {
+    title: string;
+    id: number;
+    createdAt: string;
+    content: string;
+    authorId: string | null;
+}
+
+type PartialGetArticleReturnType = Partial<GetArticleReturnType>
+
+export async function getArticles(): Promise<PartialGetArticleReturnType[] | null> {
     // check cash
-    const cached = await redis.get("articles:all")
+    const cached = await redis.get("articles:all") as PartialGetArticleReturnType[]
     if (cached) {
         console.log("Get articles cache hit")
         return cached;
@@ -16,8 +26,10 @@ export async function getArticles() {
 
     console.log("Get article cache miss");
 
+    const x: PartialGetArticleReturnType = { title: "test "}
+
     // method 1 that will return only the wanted fields
-    const result = await db
+    const result: PartialGetArticleReturnType[] = await db
         .select({
             title: article.title,
             id: article.id,

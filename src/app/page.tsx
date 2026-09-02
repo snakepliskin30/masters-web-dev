@@ -24,10 +24,10 @@ export default async function Home() {
           articles.map(article => (
             <WikiCard
               key={article.id}
-              title={article.title}
+              title={article.title ?? ""}
               author={article.authorId || "anonymous"}
-              date={article.createdAt}
-              summary={article.content}
+              date={article.createdAt ?? ""}
+              summary={article.content ?? ""}
               href={`/wiki/${article.id}`}
             />
           ))

@@ -1,3 +1,5 @@
+import { article } from "@/drizzle/schema";
+
 // Types for the wiki application API
 
 export interface Article {
@@ -26,3 +28,6 @@ export interface FileUploadResponse {
   filename?: string;
   message?: string;
 }
+
+export type ArticleType = typeof article.$inferSelect;
+export type NewArticleType = typeof article.$inferInsert;

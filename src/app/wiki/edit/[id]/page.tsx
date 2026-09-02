@@ -1,6 +1,9 @@
 import WikiEditor from "@/components/wiki-editor";
 import { auth } from "@/lib/auth";
+import { getArticleById } from "@/lib/data/article";
+import { Home } from "lucide-react";
 import { headers } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 interface EditArticlePageProps {
@@ -21,34 +24,27 @@ export default async function EditArticlePage({
 
   const { id } = await params;
 
-  // In a real app, you would fetch the article data here
-  // For now, we'll just show some mock data if it's not "new"
-  const mockData =
-    id !== "new"
-      ? {
-          title: `Sample Article ${id}`,
-          content: `# Sample Article ${id}
+  const article = await getArticleById(+id);
 
-This is some sample markdown content for article ${id}.
-
-## Features
-- **Bold text**
-- *Italic text*
-- [Links](https://example.com)
-
-## Code Example
-\`\`\`javascript
-console.log("Hello from article ${id}");
-\`\`\`
-
-This would normally be fetched from your API.`,
-        }
-      : {};
+  if (!article) {
+    return (
+      <>
+        <h3>Article Not Found</h3>
+        <Link
+            href="/"
+            className="flex items-center hover:text-foreground transition-colors"
+          >
+            <Home className="h-4 w-4 mr-1" />
+            Home
+        </Link>
+      </>
+    )
+  }
 
   return (
     <WikiEditor
-      initialTitle={mockData.title}
-      initialContent={mockData.content}
+      initialTitle={article.title}
+      initialContent={article.content}
       isEditing={true}
       articleId={id}
     />

@@ -3,6 +3,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { db } from "@/drizzle/db";
+import { article } from "@/drizzle/schema";
+import { eq } from "drizzle-orm";
 
 // Server actions for articles (stubs)
 // TODO: Replace with real database operations when ready
@@ -10,7 +13,6 @@ import { headers } from "next/headers";
 export type CreateArticleInput = {
   title: string;
   content: string;
-  authorId: string;
   imageUrl?: string;
 };
 
@@ -30,7 +32,16 @@ export async function createArticle(data: CreateArticleInput) {
 
   // TODO: Replace with actual database call
   console.log("✨ createArticle called:", data);
-  return { success: true, message: "Article create logged (stub)" };
+  const newRecord = await db.insert(article).values({
+    title: data.title,
+    content: data.content,
+    slug: `${Date.now()}`,
+    published: true,
+    authorId: session.user.id
+  })
+  .returning()
+
+  return { success: true, message: "Article create logged (stub)", id: newRecord[0].id };
 }
 
 export async function updateArticle(id: string, data: UpdateArticleInput) {
@@ -43,6 +54,12 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
 
   // TODO: Replace with actual database update
   console.log("📝 updateArticle called:", { id, ...data });
+  await db.update(article).set({
+    title: data.title,
+    content: data.content
+  })
+  .where(eq(article.id, +id))
+
   return { success: true, message: `Article ${id} update logged (stub)` };
 }
 

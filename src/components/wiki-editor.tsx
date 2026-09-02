@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { createArticle, updateArticle } from "@/app/actions/articles";
+import { useRouter } from "next/navigation";
 
 interface WikiEditorProps {
   initialTitle?: string;
@@ -38,6 +40,7 @@ export default function WikiEditor({
   const [files, setFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter()
 
   // Validate form
   const validateForm = (): boolean => {
@@ -93,16 +96,25 @@ export default function WikiEditor({
     });
 
     // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    setIsSubmitting(false);
+    if (articleId) {
+        await updateArticle(articleId, formData)
+        
+        setIsSubmitting(false);
 
-    // In a real app, you would navigate after successful submission
-    alert(
-      `Article ${
-        isEditing ? "updated" : "created"
-      } successfully! Check console for form data.`,
-    );
+        router.push(`/wiki/${articleId}`)
+    } else {
+        const newArticle = await createArticle({ title: title.trim(), content: content.trim() })
+
+
+        if (!newArticle.success)  
+          alert(
+            `Error encountered updating article`,
+          );
+        
+        router.push(`/wiki/${newArticle.id}`)
+    }
   };
 
   // Handle cancel

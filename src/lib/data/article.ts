@@ -4,7 +4,18 @@ import { WikiCard } from "@/components/ui/wiki-card";
 import { eq } from "drizzle-orm";
 import { ArticleType } from "@/types/api";
 
+import redis from "@/cache"
+
 export async function getArticles() {
+    // check cash
+    const cached = await redis.get("articles:all")
+    if (cached) {
+        console.log("Get articles cache hit")
+        return cached;
+    }
+
+    console.log("Get article cache miss");
+
     // method 1 that will return only the wanted fields
     const result = await db
         .select({
@@ -28,7 +39,9 @@ export async function getArticles() {
         return null
     }
 
-    // console.log('result', result);
+    redis.set("articles:all", result, {
+        ex: 60
+    })
 
     return result;
 }

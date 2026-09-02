@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { db } from "@/drizzle/db";
 import { article } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
+import redis from "@/cache";
 
 // Server actions for articles (stubs)
 // TODO: Replace with real database operations when ready
@@ -41,6 +42,8 @@ export async function createArticle(data: CreateArticleInput) {
     imageUrl: data.imageUrl ?? undefined
   })
   .returning()
+
+  redis.del("articles:all");
 
   return { success: true, message: "Article create logged (stub)", id: newRecord[0].id };
 }

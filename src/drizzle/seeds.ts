@@ -1,12 +1,13 @@
 import { seed } from "drizzle-seed";
-import { db } from "@/drizzle/db";
-import { article, user } from "@/drizzle/schema";
+import * as schema from "@/drizzle/schema";
+import { drizzle } from "drizzle-orm/node-postgres";
 
 const SEED_COUNT = 25;
 const SEED = 1337;
 
 async function main() {
   try {
+    const db = drizzle(process.env.DATABASE_URL!, { schema });
     console.log(`🌱 Starting DB seed with seed ${SEED}...`);
 
     console.log("🧹 Truncating articles table and restarting identity...");
@@ -16,13 +17,13 @@ async function main() {
 
     console.log("🔎 Querying existing users...");
     let users = await db
-      .select({ id: user.id })
-      .from(user)
-      .orderBy(user.id);
+      .select({ id: schema.user.id })
+      .from(schema.user)
+      .orderBy(schema.user.id);
 
     if (users.length === 0) {
       console.log("👤 No users found, inserting default seed user...");
-      await db.insert(user).values({
+      await db.insert(schema.user).values({
         id: "seed-user-001",
         name: "Seed User",
         email: "seed@example.com",
@@ -34,7 +35,7 @@ async function main() {
     console.log(`👥 Using ${users.length} user(s)`);
 
     console.log("🍩 Using drizzle-seed...");
-    await seed(db, { article }, { seed: SEED }).refine((funcs) => ({
+    await seed(db, { article: schema.article }, { seed: SEED }).refine((funcs) => ({
       article: {
         count: SEED_COUNT,
         columns: {
@@ -60,17 +61,7 @@ async function main() {
           title: funcs.loremIpsum({
             sentencesCount: 1,
           }),
-          imageUrl: funcs.valuesFromArray({
-            values: [
-                "https://picsum.photos/200/300?random=1",
-                "https://picsum.photos/200/300?random=2",
-                "https://picsum.photos/200/300?random=3",
-                "https://picsum.photos/200/300?random=4",
-                "https://picsum.photos/200/300?random=5",
-            ],
-            isUnique: false
-          }),
-        //   imageUrl: funcs.default({ defaultValue: null }),
+          imageUrl: funcs.default({ defaultValue: null }),
           published: funcs.default({ defaultValue: true }),
         },
         updatedAt: funcs.timestamp(),
@@ -86,14 +77,14 @@ async function main() {
     // Ensure the articles sequence is synced to the current MAX(id). This is a
     // safety measure in case the DB was imported or mutated in a way that left
     // the sequence behind the table's max value.
-    // try {
-    //   await sql.query(
-    //     `SELECT setval(pg_get_serial_sequence('articles','id'), COALESCE((SELECT MAX(id) FROM articles), 1), true);`,
-    //   );
-    //   console.log("✅ Sequence synced after seeding");
-    // } catch (err) {
-    //   console.warn("⚠️ Failed to sync articles sequence after seeding:", err);
-    // }
+    try {
+      // await sql.query(
+      //   `SELECT setval(pg_get_serial_sequence('articles','id'), COALESCE((SELECT MAX(id) FROM articles), 1), true);`,
+      // );
+      console.log("✅ Sequence synced after seeding");
+    } catch (err) {
+      console.warn("⚠️ Failed to sync articles sequence after seeding:", err);
+    }
   } catch (err) {
     console.error("💥 Seed failed:", err);
     process.exit(1);

@@ -1,8 +1,19 @@
 import { WikiCard } from "@/components/ui/wiki-card";
+import { db } from "@/drizzle/db";
+import { user } from "@/drizzle/schema";
 
-export default function Home() {
+export default async function Home() {
+
+  const users = await db.select({
+    field1: user.name
+  }).from(user);
+  const { field1 } = users[0];
+
   return (
     <div>
+      {users.map(user => (
+        <h1 key={user.field1}>{user.field1}</h1>
+      ))}
       <main className="max-w-2xl mx-auto mt-10 flex flex-col gap-6">
         <WikiCard
           title="Complete Intro to MCP"

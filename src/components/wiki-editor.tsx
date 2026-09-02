@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createArticle, updateArticle } from "@/app/actions/articles";
 import { useRouter } from "next/navigation";
+import { uploadFile } from "@/app/actions/upload";
 
 interface WikiEditorProps {
   initialTitle?: string;
@@ -95,25 +96,51 @@ export default function WikiEditor({
       data: formData,
     });
 
-    // Simulate API call delay
-    // await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      let imageUrl: string | undefined;
 
-    if (articleId) {
-        await updateArticle(articleId, formData)
-        
-        setIsSubmitting(false);
+      // If there's at least one file, upload the first one via server action
+      if (files.length > 0) {
+        const fd = new FormData();
+        fd.append("files", files[0]);
+        // uploadFile is a server action imported below
+        const uploaded = await uploadFile(fd);
+        imageUrl = uploaded?.url;
+      }
 
-        router.push(`/wiki/${articleId}`)
-    } else {
-        const newArticle = await createArticle({ title: title.trim(), content: content.trim() })
+      const payload = {
+        title: title.trim(),
+        content: content.trim(),
+        imageUrl,
+      };
+
+      
+
+      // Simulate API call delay
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      if (articleId) {
+          await updateArticle(articleId, payload)
+          
+          setIsSubmitting(false);
+
+          router.push(`/wiki/${articleId}`)
+      } else {
+          const newArticle = await createArticle(payload)
 
 
-        if (!newArticle.success)  
-          alert(
-            `Error encountered updating article`,
-          );
-        
-        router.push(`/wiki/${newArticle.id}`)
+          if (!newArticle.success)  
+            alert(
+              `Error encountered updating article`,
+            );
+          
+          router.push(`/wiki/${newArticle.id}`)
+      }
+    } catch (err) {
+      console.error("Error submitting article:", err);
+      alert("Failed to submit article");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

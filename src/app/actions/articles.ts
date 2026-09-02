@@ -37,7 +37,8 @@ export async function createArticle(data: CreateArticleInput) {
     content: data.content,
     slug: `${Date.now()}`,
     published: true,
-    authorId: session.user.id
+    authorId: session.user.id,
+    imageUrl: data.imageUrl ?? undefined
   })
   .returning()
 

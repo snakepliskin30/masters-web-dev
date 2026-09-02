@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1788261927559,
-      "tag": "0000_stormy_mongu",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1788271443760,
-      "tag": "0001_calm_night_nurse",
+      "when": 1788335495610,
+      "tag": "0000_mean_nightcrawler",
       "breakpoints": true
     }
   ]

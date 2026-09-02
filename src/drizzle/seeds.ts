@@ -15,6 +15,9 @@ async function main() {
     // This is simpler and avoids needing to call setval later.
     // await sql.query("TRUNCATE TABLE articles RESTART IDENTITY CASCADE;");
 
+    // await db.delete(schema.article)
+    // await db.delete(schema.user)
+
     console.log("🔎 Querying existing users...");
     let users = await db
       .select({ id: schema.user.id })

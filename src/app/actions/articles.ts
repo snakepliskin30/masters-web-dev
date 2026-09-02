@@ -57,7 +57,8 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
   console.log("📝 updateArticle called:", { id, ...data });
   await db.update(article).set({
     title: data.title,
-    content: data.content
+    content: data.content,
+    imageUrl: data.imageUrl ?? undefined
   })
   .where(eq(article.id, +id))
 
